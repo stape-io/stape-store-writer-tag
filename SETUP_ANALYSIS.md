@@ -377,19 +377,6 @@ Enable comprehensive logging to debug issues
    }
    ```
 
-3. **Add data layer events for debugging**:
-   ```javascript
-   // Custom HTML tag to log state
-   <script>
-   console.log('Store Cookie Event Received', {
-     transaction_id: {{transaction_id}},
-     purchase_tracked: {{Is_Purchase_Tracked}},
-     taboola_cid: {{taboola_cid}},
-     outbrain_cid: {{outbrain_cid}}
-   });
-   </script>
-   ```
-
 ---
 
 ### Fix #5: Restructure Event Flow

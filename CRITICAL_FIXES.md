@@ -268,29 +268,6 @@ After implementing fixes, test in Preview Mode:
 
 ---
 
-## 🔍 Debug Mode
-
-Add this Custom HTML tag to debug:
-
-```html
-<script>
-(function() {
-  console.group('🔍 Stape Store Debug');
-  console.log('Event:', {{Event Name}});
-  console.log('Transaction ID:', {{Event Data - transaction_id}});
-  console.log('Is Purchase Tracked:', {{Is_Purchase_Tracked}});
-  console.log('User Session ID:', {{User_Session_ID}});
-  console.log('Taboola CID:', {{Event Data - taboola_cid}});
-  console.log('Outbrain CID:', {{Event Data - outbrain_cid}});
-  console.groupEnd();
-})();
-</script>
-
-Trigger: All Custom Events (store_cookie)
-```
-
----
-
 ## 📊 Expected Results After Fixes
 
 | Metric | Before | After |
