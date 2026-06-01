@@ -1,17 +1,12 @@
-﻿/// <reference path="./server-gtm-sandboxed-apis.d.ts" />
-
-const JSON = require('JSON');
+﻿const JSON = require('JSON');
 const getRequestHeader = require('getRequestHeader');
 const getAllEventData = require('getAllEventData');
 const getTimestampMillis = require('getTimestampMillis');
-const logToConsole = require('logToConsole');
-const getContainerVersion = require('getContainerVersion');
 const getType = require('getType');
 const sendHttpRequest = require('sendHttpRequest');
 const encodeUriComponent = require('encodeUriComponent');
 const makeString = require('makeString');
 const generateRandom = require('generateRandom');
-const BigQuery = require('BigQuery');
 
 /*==============================================================================
 ==============================================================================*/
@@ -52,15 +47,6 @@ if (data.customDataList) {
   });
 }
 
-log({
-  Name: 'StapeStore',
-  Type: 'Request',
-  EventName: 'Store',
-  RequestMethod: method,
-  RequestUrl: documentUrl,
-  RequestBody: input
-});
-
 sendHttpRequest(
   documentUrl,
   { method: method, headers: { 'Content-Type': 'application/json' } },
@@ -68,29 +54,10 @@ sendHttpRequest(
 ).then(
   (response) => {
     const responseStatusCode = response.statusCode;
-
-    log({
-      Name: 'StapeStore',
-      Type: 'Response',
-      EventName: 'Store',
-      ResponseStatusCode: responseStatusCode,
-      ResponseHeaders: {},
-      ResponseBody: response.body
-    });
-
     if (responseStatusCode === 200) data.gtmOnSuccess();
     else data.gtmOnFailure();
   },
   (response) => {
-    log({
-      Name: 'StapeStore',
-      Type: 'Response',
-      EventName: 'Store',
-      ResponseStatusCode: response.statusCode,
-      ResponseHeaders: {},
-      ResponseBody: response.body
-    });
-
     data.gtmOnFailure();
   }
 );
@@ -155,93 +122,6 @@ function isUIFieldTrue(field) {
 }
 
 function enc(data) {
-  return encodeUriComponent(makeString(data || ''));
-}
-
-function log(rawDataToLog) {
-  const logDestinationsHandlers = {};
-  if (determinateIsLoggingEnabled()) logDestinationsHandlers.console = logConsole;
-  if (determinateIsLoggingEnabledForBigQuery()) logDestinationsHandlers.bigQuery = logToBigQuery;
-
-  rawDataToLog.TraceId = getRequestHeader('trace-id');
-
-  const keyMappings = {
-    // No transformation for Console is needed.
-    bigQuery: {
-      Name: 'tag_name',
-      Type: 'type',
-      TraceId: 'trace_id',
-      EventName: 'event_name',
-      RequestMethod: 'request_method',
-      RequestUrl: 'request_url',
-      RequestBody: 'request_body',
-      ResponseStatusCode: 'response_status_code',
-      ResponseHeaders: 'response_headers',
-      ResponseBody: 'response_body'
-    }
-  };
-
-  for (const logDestination in logDestinationsHandlers) {
-    const handler = logDestinationsHandlers[logDestination];
-    if (!handler) continue;
-
-    const mapping = keyMappings[logDestination];
-    const dataToLog = mapping ? {} : rawDataToLog;
-
-    if (mapping) {
-      for (const key in rawDataToLog) {
-        const mappedKey = mapping[key] || key;
-        dataToLog[mappedKey] = rawDataToLog[key];
-      }
-    }
-
-    handler(dataToLog);
-  }
-}
-
-function logConsole(dataToLog) {
-  logToConsole(JSON.stringify(dataToLog));
-}
-
-function logToBigQuery(dataToLog) {
-  const connectionInfo = {
-    projectId: data.logBigQueryProjectId,
-    datasetId: data.logBigQueryDatasetId,
-    tableId: data.logBigQueryTableId
-  };
-
-  dataToLog.timestamp = getTimestampMillis();
-
-  ['request_body', 'response_headers', 'response_body'].forEach((p) => {
-    dataToLog[p] = JSON.stringify(dataToLog[p]);
-  });
-
-  BigQuery.insert(connectionInfo, [dataToLog], { ignoreUnknownValues: true });
-}
-
-function determinateIsLoggingEnabled() {
-  const containerVersion = getContainerVersion();
-  const isDebug = !!(
-    containerVersion &&
-    (containerVersion.debugMode || containerVersion.previewMode)
-  );
-
-  if (!data.logType) {
-    return isDebug;
-  }
-
-  if (data.logType === 'no') {
-    return false;
-  }
-
-  if (data.logType === 'debug') {
-    return isDebug;
-  }
-
-  return data.logType === 'always';
-}
-
-function determinateIsLoggingEnabledForBigQuery() {
-  if (data.bigQueryLogType === 'no') return false;
-  return data.bigQueryLogType === 'always';
+  if (['null', 'undefined'].indexOf(getType(data)) !== -1) data = '';
+  return encodeUriComponent(makeString(data));
 }
