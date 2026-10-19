@@ -1,6 +1,8 @@
 homepage: 'https://stape.io/'
 documentation: 'https://github.com/stape-io/stape-store-writer-tag'
 versions:
+  - sha: ad468c96b8ebc51a3c651ff449385921258ca009
+    changeNotes: Stape Store was renamed to Stape Data Store.
   - sha: 4ec35f24d644f844a6e34bc9a936d68c26aabb88
     changeNotes: Template logo update.
   - sha: 31464d5fd9ac1ae7f539043dfe52f55e130aa8f9
